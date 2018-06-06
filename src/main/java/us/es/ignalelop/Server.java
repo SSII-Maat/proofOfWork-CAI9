@@ -1,11 +1,8 @@
 package us.es.ignalelop;
 
 import java.awt.geom.IllegalPathStateException;
-import java.math.BigInteger;
 import java.net.Socket;
 import java.security.MessageDigest;
-
-import javax.xml.bind.DatatypeConverter;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -15,9 +12,8 @@ import us.es.ignalelop.network.NetworkClientRunnable;
 
 public class Server extends NetworkClientRunnable {
     private int state = 0;
-    private String resultMessage = "Proof of work!";
+    private String resultMessage = "b6f6991d03df0e2e04dafffcd6bc418aac66049e2cd74b80f14ac86db1e3f0da";
     private int difficulty = 2;
-    private boolean infoSent = false;
 
     @Override
 	public String sendingRun(Socket clientSocket) throws Exception {
@@ -54,20 +50,20 @@ public class Server extends NetworkClientRunnable {
             // Comprobamos si realmente esta operación es la correcta
             String convertedMessage = Integer.toString(nonce) + resultMessage;
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-            String ourHash = DatatypeConverter.printHexBinary(messageDigest.digest(convertedMessage.getBytes()));
+            String ourHash = Utils.getHex(messageDigest.digest(convertedMessage.getBytes()));
 
             JsonObject responseJson = new JsonObject();
 
             // Comprobamos si el hash calculado es el recibido y si cumple las condiciones
-            if(ourHash == receivedHash && ourHash.substring(0, this.difficulty).equals(objective)) {
-                // Enviamos mensaje de fallo
-                System.out.println("Ha fallado el nonce transmitido");
-                responseJson.addProperty("status", "Error");
-            } else {
+            if(ourHash.equals(receivedHash) && ourHash.substring(0, this.difficulty).equals(objective)) {
                 // Éxito, retornamos que ha salido bien
                 System.out.println("El nonce enviado es correcto");
                 responseJson.addProperty("status", "OK");
                 this.state++;
+            } else {
+                // Enviamos mensaje de fallo
+                System.out.println("Ha fallado el nonce transmitido");
+                responseJson.addProperty("status", "Error");
             }
 
             return responseJson.toString();

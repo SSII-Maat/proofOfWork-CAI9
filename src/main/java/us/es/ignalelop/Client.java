@@ -1,10 +1,7 @@
 package us.es.ignalelop;
 
-import java.math.BigInteger;
 import java.net.Socket;
 import java.security.MessageDigest;
-
-import javax.xml.bind.DatatypeConverter;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -25,14 +22,14 @@ public class Client extends NetworkClientRunnable {
             // El objeto que realizará el hashing
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             // Y los datos de la iteración.
-            int nonce = 0;
+            long nonce = 0l;
             boolean notFound = true;
             String objetive = new String(new char[this.difficulty]).replace('\0', '0');
             
             while(notFound) {
-                String iterationMessage = Integer.toString(nonce) + message;
+                String iterationMessage = Long.toString(nonce) + message;
                 byte[] iterationHash = messageDigest.digest(iterationMessage.getBytes());
-                String iterationResult = DatatypeConverter.printHexBinary(iterationHash);
+                String iterationResult = Utils.getHex(iterationHash);
                 if(iterationResult.substring(0, this.difficulty).equals(objetive)) {
                     // Hemos encontrado la combinación ganadora
                     notFound = false;
